@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tic Tac Toe Experience</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0a0a0a;
+            color: #ffffff;
+            overflow-x: hidden;
+        }
+
+        .hero {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            padding: 2rem;
+            background: linear-gradient(45deg, #1a1a1a, #0a0a0a);
+        }
+
+        .hero h1 {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            text-align: center;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 0.8s forwards;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            opacity: 0.8;
+            margin-bottom: 2rem;
+            text-align: center;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 0.8s 0.2s forwards;
+        }
+
+        @keyframes fadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .game-wrapper {
+            display: flex;
+            gap: 2rem;
+            align-items: flex-start;
+        }
+
+        .game-container {
+            padding: 2rem;
+            background-color: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 0.8s 0.4s forwards;
+        }
+
+        .scoreboard {
+            padding: 2rem;
+            background-color: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 0.8s 0.6s forwards;
+            min-width: 200px;
+        }
+
+        .scoreboard h2 {
+            text-align: center;
+            margin-bottom: 1rem;
+            color: #4CAF50;
+        }
+
+        .score-item {
+            display: flex;
+            justify-content: space-between;
+            margin: 0.5rem 0;
+            padding: 0.5rem;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+        }
+
+        #status {
+            font-size: 1.5rem;
+            margin-bottom: 2rem;
+            text-align: center;
+            color: #4CAF50;
+        }
+
+        #board {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 2rem;
+        }
+
+        .cell {
+            width: 100px;
+            height: 100px;
+            border: none;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            font-size: 2.5rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: #ffffff;
+        }
+
+        .cell:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .x {
+            color: #2196F3;
+            text-shadow: 0 0 10px rgba(33, 150, 243, 0.5);
+        }
+
+        .o {
+            color: #F44336;
+            text-shadow: 0 0 10px rgba(244, 67, 54, 0.5);
+        }
+
+        #reset {
+            padding: 1rem 2rem;
+            font-size: 1.2rem;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: block;
+            margin: 0 auto;
+        }
+
+        #reset:hover {
+            background-color: #45a049;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(76, 175, 80, 0.3);
+        }
+
+        .parallax-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        .particle {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        .victory-overlay,
+        .defeat-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: 10;
+        }
+
+        .victory-overlay {
+            background: linear-gradient(45deg, #4CAF50, transparent);
+            clip-path: polygon(0 0, 0 0, 0 0);
+            animation: slashEffect 0.5s ease-out forwards;
+        }
+
+        .defeat-overlay {
+            background: linear-gradient(45deg, #F44336, transparent);
+            clip-path: polygon(0 0, 0 0, 0 0);
+            animation: slashEffect 0.5s ease-out forwards;
+        }
+
+        @keyframes slashEffect {
+            0% {
+                clip-path: polygon(0 0, 0 0, 0 0);
+                opacity: 0;
+            }
+            10% {
+                clip-path: polygon(0 100%, 100% 0, 100% 0, 0 100%);
+                opacity: 1;
+            }
+            20% {
+                clip-path: polygon(-20% 120%, 120% -20%, 120% 20%, -20% 160%);
+            }
+            100% {
+                clip-path: polygon(-20% 120%, 120% -20%, 120% 20%, -20% 160%);
+                opacity: 0;
+            }
+        }
+
+        .slash-line {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 200%;
+            height: 2px;
+            background: white;
+            transform: rotate(45deg);
+            transform-origin: 0 50%;
+            z-index: 11;
+            opacity: 0;
+            box-shadow: 0 0 10px 2px rgba(255, 255, 255, 0.8);
+            animation: slashLine 0.5s ease-out forwards;
+        }
+
+        @keyframes slashLine {
+            0% {
+                transform: rotate(45deg) translateX(-100%);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: rotate(45deg) translateX(50%);
+                opacity: 0;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+
+            .cell {
+                width: 80px;
+                height: 80px;
+                font-size: 2rem;
+            }
+        }
+
+        @media (max-width: 800px) {
+            .game-wrapper {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .scoreboard {
+                width: 100%;
+                max-width: 400px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="parallax-bg" id="parallax"></div>
+    <div id="victoryOverlay" class="victory-overlay"></div>
+    <div id="defeatOverlay" class="defeat-overlay"></div>
+    
+    <section class="hero">
+        <h1>Tic Tac Toe</h1>
+        <p>Challenge the AI in this classic game</p>
+        
+        <div class="game-wrapper">
+            <div class="game-container">
+                <div id="status">Your Turn (X)</div>
+                <div id="board">
+                    <button class="cell" data-index="0"></button>
+                    <button class="cell" data-index="1"></button>
+                    <button class="cell" data-index="2"></button>
+                    <button class="cell" data-index="3"></button>
+                    <button class="cell" data-index="4"></button>
+                    <button class="cell" data-index="5"></button>
+                    <button class="cell" data-index="6"></button>
+                    <button class="cell" data-index="7"></button>
+                    <button class="cell" data-index="8"></button>
+                </div>
+                <button id="reset">Reset Game</button>
+            </div>
+
+            <div class="scoreboard">
+                <h2>Scoreboard</h2>
+                <div class="score-item">
+                    <span>You (X)</span>
+                    <span id="playerScore">0</span>
+                </div>
+                <div class="score-item">
+                    <span>AI (O)</span>
+                    <span id="aiScore">0</span>
+                </div>
+                <div class="score-item">
+                    <span>Draws</span>
+                    <span id="drawScore">0</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        const board = document.getElementById('board');
+        const cells = document.querySelectorAll('.cell');
+        const status = document.getElementById('status');
+        const resetButton = document.getElementById('reset');
+        const playerScoreElement = document.getElementById('playerScore');
+        const aiScoreElement = document.getElementById('aiScore');
+        const drawScoreElement = document.getElementById('drawScore');
+
+        let gameBoard = Array(9).fill('');
+        let gameActive = true;
+        const HUMAN_PLAYER = 'X';
+        const AI_PLAYER = 'O';
+
+        // Initialize scores
+        let scores = {
+            player: 0,
+            ai: 0,
+            draws: 0
+        };
+
+        const winningCombinations = [
+            [0, 1, 2], [3, 4, 5], [6, 7, 8], // Rows
+            [0, 3, 6], [1, 4, 7], [2, 5, 8], // Columns
+            [0, 4, 8], [2, 4, 6] // Diagonals
+        ];
+
+        function handleCellClick(e) {
+            const cell = e.target;
+            const index = cell.dataset.index;
+
+            if (gameBoard[index] === '' && gameActive) {
+                // Human move
+                makeMove(index, HUMAN_PLAYER);
+                
+                if (!checkGameEnd(HUMAN_PLAYER)) {
+                    // AI move
+                    setTimeout(() => {
+                        makeAIMove();
+                        checkGameEnd(AI_PLAYER);
+                    }, 500);
+                }
+            }
+        }
+
+        function makeMove(index, player) {
+            gameBoard[index] = player;
+            const cell = cells[index];
+            cell.textContent = player;
+            cell.classList.add(player.toLowerCase());
+        }
+
+        function makeAIMove() {
+            if (!gameActive) return;
+            
+            // Try to win
+            const winningMove = findBestMove(AI_PLAYER);
+            if (winningMove !== -1) {
+                makeMove(winningMove, AI_PLAYER);
+                return;
+            }
+
+            // Block player's winning move
+            const blockingMove = findBestMove(HUMAN_PLAYER);
+            if (blockingMove !== -1) {
+                makeMove(blockingMove, AI_PLAYER);
+                return;
+            }
+
+            // Take center if available
+            if (gameBoard[4] === '') {
+                makeMove(4, AI_PLAYER);
+                return;
+            }
+
+            // Take any available corner
+            const corners = [0, 2, 6, 8];
+            const availableCorners = corners.filter(i => gameBoard[i] === '');
+            if (availableCorners.length > 0) {
+                const randomCorner = availableCorners[Math.floor(Math.random() * availableCorners.length)];
+                makeMove(randomCorner, AI_PLAYER);
+                return;
+            }
+
+            // Take any available side
+            const sides = [1, 3, 5, 7];
+            const availableSides = sides.filter(i => gameBoard[i] === '');
+            if (availableSides.length > 0) {
+                const randomSide = availableSides[Math.floor(Math.random() * availableSides.length)];
+                makeMove(randomSide, AI_PLAYER);
+            }
+        }
+
+        function findBestMove(player) {
+            for (let i = 0; i < 9; i++) {
+                if (gameBoard[i] === '') {
+                    gameBoard[i] = player;
+                    if (checkWinner(player)) {
+                        gameBoard[i] = '';
+                        return i;
+                    }
+                    gameBoard[i] = '';
+                }
+            }
+            return -1;
+        }
+
+        function checkGameEnd(player) {
+            if (checkWinner(player)) {
+                if (player === HUMAN_PLAYER) {
+                    scores.player++;
+                    playerScoreElement.textContent = scores.player;
+                    status.textContent = "You Win!";
+                    showOverlay('victory');
+                } else {
+                    scores.ai++;
+                    aiScoreElement.textContent = scores.ai;
+                    status.textContent = "Computer Wins!";
+                    showOverlay('defeat');
+                }
+                gameActive = false;
+                return true;
+            } else if (gameBoard.every(cell => cell !== '')) {
+                scores.draws++;
+                drawScoreElement.textContent = scores.draws;
+                status.textContent = "It's a Draw!";
+                gameActive = false;
+                return true;
+            }
+            
+            status.textContent = player === HUMAN_PLAYER ? "Computer's Turn" : "Your Turn (X)";
+            return false;
+        }
+
+        function showOverlay(type) {
+            const overlay = type === 'victory' ? 
+                document.getElementById('victoryOverlay') : 
+                document.getElementById('defeatOverlay');
+            
+            overlay.style.display = 'block';
+            
+            // Remove previous animation
+            overlay.style.animation = 'none';
+            overlay.offsetHeight; // Trigger reflow
+            overlay.style.animation = 'slashEffect 0.5s ease-out forwards';
+            
+            setTimeout(() => {
+                overlay.style.display = 'none';
+            }, 1500);
+        }
+
+        function checkWinner(player) {
+            return winningCombinations.some(combination => {
+                return combination.every(index => gameBoard[index] === player);
+            });
+        }
+
+        function resetGame() {
+            gameBoard = Array(9).fill('');
+            gameActive = true;
+            status.textContent = "Your Turn (X)";
+            cells.forEach(cell => {
+                cell.textContent = '';
+                cell.classList.remove('x', 'o');
+            });
+            document.getElementById('victoryOverlay').style.display = 'none';
+            document.getElementById('defeatOverlay').style.display = 'none';
+        }
+
+        // Event Listeners
+        cells.forEach(cell => {
+            cell.addEventListener('click', handleCellClick);
+        });
+
+        resetButton.addEventListener('click', resetGame);
+
+        // Parallax effect
+        function createParallaxBackground() {
+            const parallax = document.getElementById('parallax');
+            const particleCount = 50;
+
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                
+                const size = Math.random() * 4 + 2;
+                particle.style.width = `${size}px`;
+                particle.style.height = `${size}px`;
+                
+                particle.style.left = `${Math.random() * 100}%`;
+                particle.style.top = `${Math.random() * 100}%`;
+                
+                particle.style.opacity = Math.random() * 0.5;
+                
+                parallax.appendChild(particle);
+            }
+
+            document.addEventListener('mousemove', (e) => {
+                const particles = document.querySelectorAll('.particle');
+                particles.forEach((particle, index) => {
+                    const speed = (index + 1) * 0.05;
+                    const x = (window.innerWidth - e.pageX * speed) / 100;
+                    const y = (window.innerHeight - e.pageY * speed) / 100;
+                    particle.style.transform = `translate(${x}px, ${y}px)`;
+                });
+            });
+        }
+
+        createParallaxBackground();
+    </script>
+</body>
+</html> 
